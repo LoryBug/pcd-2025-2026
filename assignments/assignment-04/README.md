@@ -8,7 +8,7 @@ The assignment is about distributed programming.
 
 ### Exercise #1 - *Distributed Smart Home Alarm System*
 
-- [Description](https://github.com/nicolasfara/seminar-pcd-actor-pekko-code/blob/master/assignment_4_smart_home_alarm_cluster.md]) by N. Farabegoli
+- [Description](https://github.com/nicolasfara/seminar-pcd-actor-pekko-code/blob/master/assignment_4_smart_home_alarm_cluster.md) by N. Farabegoli
 
 ### Exercise #2 - *Distributed TTT with Java RMI*
 
