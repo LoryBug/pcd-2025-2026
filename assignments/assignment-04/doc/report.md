@@ -8,6 +8,7 @@ Two mandatory systems were implemented:
 
 - a distributed Smart Home Alarm based on Apache Pekko Cluster;
 - a distributed Tic-Tac-Toe game based on Java RMI.
+- a distributed critical-section middleware based on RabbitMQ.
 
 ## Exercise 1 - Distributed Smart Home Alarm
 
@@ -130,6 +131,74 @@ Join as Bob:
 
 The client also accepts optional row/column pairs after the player name to submit moves.
 
+## Exercise 3 - Distributed Critical Sections With RabbitMQ
+
+### Architecture
+
+Package: `pcd.ass04.cs`
+
+The middleware exposes a high-level `DistributedLock` abstraction. A process only needs a lock name and its own process id; it does not know the identity or number of the other processes.
+
+RabbitMQ is used as the message-oriented middleware. For each logical lock, two queues are created:
+
+- `pcd.ass04.cs.<lock>.request` for acquire requests;
+- `pcd.ass04.cs.<lock>.release` for release notifications.
+
+Each process also creates an exclusive reply queue. Requests include `replyTo` and `correlationId`, so the coordinator can grant the lock to the correct process.
+
+```text
+Process P1 -- acquire --> request queue
+Process P2 -- acquire --> request queue
+Coordinator -- grant --> process reply queue
+Process P1 -- release --> release queue
+```
+
+### Coordination Algorithm
+
+The coordinator keeps the current holder and a FIFO queue of pending requests:
+
+```text
+on request:
+  if no current holder -> grant immediately
+  else enqueue request
+
+on release:
+  if queue empty -> lock becomes free
+  else dequeue first waiting process and grant it
+```
+
+This gives mutual exclusion and FIFO fairness with respect to the order in which the coordinator consumes RabbitMQ request messages.
+
+### Running RabbitMQ And Demo
+
+Start RabbitMQ:
+
+```bash
+docker compose up -d rabbitmq
+```
+
+Run a one-JVM demo with one coordinator and three logical processes:
+
+```bash
+.\mvnw.cmd exec:java "-Dexec.mainClass=pcd.ass04.cs.CriticalSectionDemo"
+```
+
+Observed output:
+
+```text
+p2:enter,p2:exit,p3:enter,p3:exit,p1:enter,p1:exit
+```
+
+The exact order depends on message arrival order, but entries and exits are serialized: no two processes are in the critical section at the same time.
+
+Separate-process execution is also supported:
+
+```bash
+.\mvnw.cmd exec:java "-Dexec.mainClass=pcd.ass04.cs.CriticalSectionCoordinatorMain" "-Dexec.args=home-lock"
+.\mvnw.cmd exec:java "-Dexec.mainClass=pcd.ass04.cs.CriticalSectionProcessMain" "-Dexec.args=p1 home-lock 1000"
+.\mvnw.cmd exec:java "-Dexec.mainClass=pcd.ass04.cs.CriticalSectionProcessMain" "-Dexec.args=p2 home-lock 1000"
+```
+
 ## Verification
 
 Tests cover:
@@ -139,6 +208,8 @@ Tests cover:
 - inactive-zone sensor filtering;
 - RMI hub game creation and join;
 - legal turn validation and winner detection.
+- RabbitMQ coordinator FIFO state;
+- RabbitMQ integration with two competing lock clients.
 
 Command:
 
@@ -149,7 +220,7 @@ Command:
 Result:
 
 ```text
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
