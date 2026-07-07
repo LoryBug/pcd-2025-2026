@@ -131,6 +131,7 @@ Go formatting and tests:
 ```bash
 gofmt -w main.go main_test.go
 go test -count=1 ./...
+go test -race -count=1 ./...
 go run . 8
 ```
 
@@ -138,5 +139,6 @@ Result:
 
 ```text
 ok  	pcd-ass03-odds-evens
+ok  	pcd-ass03-odds-evens	1.678s
 Winner: P7 (id=7)
 ```
