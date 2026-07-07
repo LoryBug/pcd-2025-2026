@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"errors"
+	"testing"
+	"time"
+)
 
 func TestTournamentRequiresPowerOfTwo(t *testing.T) {
 	_, _, err := RunTournament(defaultPlayers(6))
@@ -30,5 +34,25 @@ func TestWinnerOfUsesFirstPlayerParity(t *testing.T) {
 	second := Move{Player: Player{ID: 2, Name: "even"}, Number: 2, Parity: Even}
 	if winner := winnerOf(first, second); winner.ID != first.Player.ID {
 		t.Fatalf("expected first player to win, got %v", winner)
+	}
+}
+
+func TestTournamentCanBeCancelled(t *testing.T) {
+	done := make(chan struct{})
+	close(done)
+
+	_, _, err := RunTournamentWithCancel(defaultPlayers(8), done, time.Second)
+	if !errors.Is(err, ErrTournamentCancelled) {
+		t.Fatalf("expected cancellation error, got %v", err)
+	}
+}
+
+func TestTournamentMatchTimeout(t *testing.T) {
+	players := defaultPlayers(2)
+	players[0].ThinkTime = 50 * time.Millisecond
+
+	_, _, err := RunTournamentWithCancel(players, nil, time.Millisecond)
+	if !errors.Is(err, ErrMatchTimeout) {
+		t.Fatalf("expected match timeout, got %v", err)
 	}
 }

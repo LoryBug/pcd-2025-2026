@@ -93,14 +93,14 @@ Main elements:
 
 Each round is a barrier: the coordinator waits for all match results before creating the next round. Match results are stored by match index so the bracket order is deterministic even though matches complete concurrently.
 
-The number of players is validated with a power-of-two check.
+The number of players is validated with a power-of-two check. The Go version also supports cancellation through a `done` channel and per-match timeout with `select`, following the CSP patterns discussed in the course. If cancellation happens, all goroutines observe the same `done` signal and stop without sharing mutable state.
 
 ### Running The Go Program
 
 ```bash
 cd go-odds-evens
 go run . 8
-go test ./...
+go test -count=1 ./...
 ```
 
 ## Verification
@@ -130,7 +130,7 @@ Go formatting and tests:
 
 ```bash
 gofmt -w main.go main_test.go
-go test ./...
+go test -count=1 ./...
 go run . 8
 ```
 
