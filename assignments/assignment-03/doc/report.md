@@ -103,8 +103,6 @@ go run . 8
 go test ./...
 ```
 
-The local development environment used for this report did not have the Go toolchain in `PATH`, so Go commands could not be executed here. The source includes unit tests in `main_test.go` for validation on a machine with Go installed.
-
 ## Verification
 
 Java/Pekko tests:
@@ -128,4 +126,17 @@ Packaging:
 
 Result: `BUILD SUCCESS`.
 
-Go verification commands are provided, but were not run locally because `go` and `gofmt` are not installed or not available in `PATH` in this environment.
+Go formatting and tests:
+
+```bash
+gofmt -w main.go main_test.go
+go test ./...
+go run . 8
+```
+
+Result:
+
+```text
+ok  	pcd-ass03-odds-evens
+Winner: P7 (id=7)
+```
