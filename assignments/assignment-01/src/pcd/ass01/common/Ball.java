@@ -1,5 +1,6 @@
 package pcd.ass01.common;
 
+/** Mutable physical ball used only inside a board monitor. */
 public final class Ball {
 
     private static final double FRICTION_FACTOR = 0.25;
@@ -19,6 +20,13 @@ public final class Ball {
         this.lastDirectTouch = lastDirectTouch;
     }
 
+    /**
+     * Applies friction, moves the ball and handles boundary rebounds.
+     *
+     * <p>This method is intentionally not synchronized: synchronization is
+     * owned by {@link Board} and by the task-based board, which decide when a
+     * ball can be safely updated.
+     */
     public void updateState(long dt, Bounds bounds) {
         double speed = vel.abs();
         double dtScaled = dt * 0.001;
@@ -77,6 +85,16 @@ public final class Ball {
         }
     }
 
+    /**
+     * Resolves an elastic collision between two balls if they overlap.
+     *
+     * <p>This method mutates both input balls: positions may be separated and
+     * velocities may be changed. Because each call writes two objects, running
+     * many calls in parallel without extra coordination would create races when
+     * two pairs share the same ball.
+     *
+     * @return true if an overlap was detected and resolved
+     */
     public static boolean resolveCollision(Ball a, Ball b) {
         double dx = b.pos.x() - a.pos.x();
         double dy = b.pos.y() - a.pos.y();

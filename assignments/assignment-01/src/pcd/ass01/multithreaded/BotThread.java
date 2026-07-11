@@ -7,6 +7,13 @@ import pcd.ass01.common.GameStatus;
 import pcd.ass01.common.KickBotCommand;
 import pcd.ass01.common.Vec2;
 
+/**
+ * Autonomous producer of bot commands.
+ *
+ * <p>The bot never mutates the model directly. It reads synchronized model state
+ * to decide whether it can shoot, then enqueues a {@code KickBotCommand} in the
+ * shared command buffer.
+ */
 public final class BotThread extends Thread {
 
     private final GameModel model;
@@ -14,6 +21,10 @@ public final class BotThread extends Thread {
     private final Random random;
     private volatile boolean stopped;
 
+    /**
+     * @param model shared game model used for synchronized reads
+     * @param commands command buffer used to publish bot decisions
+     */
     public BotThread(GameModel model, CommandBuffer commands) {
         super("poool-bot");
         this.model = model;
@@ -21,11 +32,13 @@ public final class BotThread extends Thread {
         this.random = new Random(11);
     }
 
+    /** Requests the bot loop to stop. */
     public void shutdown() {
         stopped = true;
         interrupt();
     }
 
+    /** Periodically checks the bot ball and enqueues a command when it is stopped. */
     @Override
     public void run() {
         while (!stopped && model.status() == GameStatus.RUNNING) {

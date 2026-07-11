@@ -9,11 +9,18 @@ import pcd.ass01.multithreaded.GameLoopThread;
 import pcd.ass01.view.GameView;
 import pcd.ass01.view.ViewModel;
 
+/** Entrypoint for the task-based version of Poool. */
 public final class PooolTaskBased {
 
     private PooolTaskBased() {
     }
 
+    /**
+     * Creates the task-based board, the worker pool and the same runtime threads
+     * used by the monitor-based version.
+     *
+     * @param args optional configuration name: {@code minimal}, {@code large} or {@code massive}
+     */
     public static void main(String[] args) {
         BoardConfig config = parseConfig(args);
         int cores = Math.max(1, Runtime.getRuntime().availableProcessors());

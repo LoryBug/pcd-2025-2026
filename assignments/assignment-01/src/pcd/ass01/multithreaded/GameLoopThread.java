@@ -7,6 +7,13 @@ import pcd.ass01.common.GameStatus;
 import pcd.ass01.view.GameView;
 import pcd.ass01.view.ViewModel;
 
+/**
+ * Main simulation thread.
+ *
+ * <p>Each frame drains pending commands, applies them to the model, advances
+ * physics, publishes an immutable snapshot and waits for Swing rendering to
+ * complete before starting the next frame.
+ */
 public final class GameLoopThread extends Thread {
 
     private final GameModel model;
@@ -16,6 +23,13 @@ public final class GameLoopThread extends Thread {
     private final int targetFps;
     private volatile boolean stopped;
 
+    /**
+     * @param model shared game model protected by its own monitor
+     * @param commands monitor-protected command buffer
+     * @param viewModel holder of the last immutable snapshot
+     * @param view Swing view used for rendering
+     * @param targetFps target frame rate for the loop
+     */
     public GameLoopThread(GameModel model, CommandBuffer commands, ViewModel viewModel, GameView view, int targetFps) {
         super("poool-game-loop");
         this.model = model;
@@ -25,11 +39,13 @@ public final class GameLoopThread extends Thread {
         this.targetFps = targetFps;
     }
 
+    /** Requests the loop to stop and interrupts any current sleep or render wait. */
     public void shutdown() {
         stopped = true;
         interrupt();
     }
 
+    /** Executes the frame loop until shutdown or game termination. */
     @Override
     public void run() {
         long lastUpdateTime = System.currentTimeMillis();

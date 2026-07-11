@@ -6,11 +6,17 @@ import pcd.ass01.common.CommandBuffer;
 import pcd.ass01.view.GameView;
 import pcd.ass01.view.ViewModel;
 
+/** Entrypoint for the monitor-based multithreaded version of Poool. */
 public final class PooolMultithreaded {
 
     private PooolMultithreaded() {
     }
 
+    /**
+     * Creates the shared model, command buffer, Swing view and active threads.
+     *
+     * @param args optional configuration name: {@code minimal}, {@code large} or {@code massive}
+     */
     public static void main(String[] args) {
         BoardConfig config = parseConfig(args);
         Board board = new Board(config);
